@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """run_sim.py - assemble the programs, compile the Verilog, run the testbench.
 
-    python tools/run_sim.py
+    python tools/run_sim.py            run the tests
+    python tools/run_sim.py --trace    also print every instruction as it runs
 
 Run it from anywhere; it always works relative to the project folder.
 Afterwards open the waveform with:  gtkwave build/tb.vcd
@@ -41,7 +42,8 @@ def main():
 
     sources = sorted(glob.glob(os.path.join(ROOT, "src", "*.v")))
     run([find_tool("iverilog"), "-g2005", "-Wall", "-Wno-timescale", "-o", "build/tb.vvp", "test/tb_local.v"] + sources)
-    output = run([find_tool("vvp"), "build/tb.vvp"])
+    trace = ["+trace"] if "--trace" in sys.argv else []
+    output = run([find_tool("vvp"), "build/tb.vvp"] + trace)
 
     if "ALL TESTS PASSED" not in output:
         sys.exit("Simulation did not pass.")

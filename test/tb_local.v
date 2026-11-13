@@ -114,6 +114,35 @@ module tb_local;
         end
     endtask
 
+    // ---- instruction trace (like single-stepping in a debugger) ----
+    // Switched on with:  python tools/run_sim.py --trace
+    // Prints one line per finished instruction: its address, its name, and
+    // what A and the flags look like AFTER it ran.
+    reg        trace_on;
+    reg [3:0]  t_addr;
+    reg [7:0]  t_ir;
+    reg [31:0] t_name;
+    initial trace_on = $test$plusargs("trace");
+
+    always @(posedge clk) begin
+        // "in EXECUTE and about to leave it" = this instruction finishes now
+        if (trace_on && dut.u_ctrl.state == 2'd1 && dut.u_ctrl.next_state != 2'd1) begin
+            t_addr = dut.pc_addr - 4'd1;       // PC already moved on during FETCH
+            t_ir   = dut.u_ir.ir;
+            case (t_ir[7:4])
+                4'h0: t_name = "NOP ";  4'h1: t_name = "LDA ";  4'h2: t_name = "LDI ";
+                4'h3: t_name = "STA ";  4'h4: t_name = "ADD ";  4'h5: t_name = "SUB ";
+                4'h6: t_name = "XOR ";  4'h7: t_name = "ROL ";  4'h8: t_name = "IN  ";
+                4'h9: t_name = "OUT ";  4'hA: t_name = "JMP ";  4'hB: t_name = "JZ  ";
+                4'hC: t_name = "JC  ";  4'hD: t_name = "WAIT";  4'hF: t_name = "HLT ";
+                default: t_name = "??? ";
+            endcase
+            #1;                                // let the registers update first
+            $display("    [%2d] %02h  %s %2d   A=%02h Z=%b C=%b  out=%02h",
+                     t_addr, t_ir, t_name, t_ir[3:0], dut.a, dut.z, dut.c, uo_out);
+        end
+    end
+
     initial begin
         $dumpfile("build/tb.vcd");
         $dumpvars(0, tb_local);
@@ -127,6 +156,7 @@ module tb_local;
         plain[0] = "H"; plain[1] = "E"; plain[2] = "L"; plain[3] = "L"; plain[4] = "O";
 
         // ---- reset ----
+        uio_in = 8'h10;            // hold LOAD so the CPU does not run empty memory
         repeat (3) @(negedge clk);
         rst_n = 1'b1;
 
