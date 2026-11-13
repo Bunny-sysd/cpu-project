@@ -13,3 +13,4 @@ src/config_merged.json
 test/sim_build
 test/results.xml
 test/gate_level_netlist.v
+.pio/

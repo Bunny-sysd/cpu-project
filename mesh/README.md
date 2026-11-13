@@ -5,8 +5,9 @@ Each device passes other people's messages along, so a message can reach
 someone who is out of direct radio range.
 
 **Status:** the mesh logic and encryption are written and tested on a PC with
-simulated radios. It has not run on real hardware yet. The steps to get it
-onto boards are in [docs/HANDOFF.md](docs/HANDOFF.md).
+simulated radios. Firmware for the Heltec V3 board (radio, Wi-Fi, chat page)
+is written and compiles, but has never run on a real board. The steps for the
+first hardware test are in [docs/HANDOFF.md](docs/HANDOFF.md).
 
 ## Run it
 
@@ -44,9 +45,10 @@ Needs g++ (`winget install BrechtSanders.WinLibs.POSIX.UCRT`, then open a new te
 | `sim/world.h` | pretend radios and clock for testing on a PC |
 | `sim/tests.cpp` | tests |
 | `sim/demo.cpp` | four-node demo |
+| `firmware/` | the program for a Heltec V3 board: real radio, Wi-Fi and chat page |
 | `vendor/monocypher/` | the cryptography library (third party, unmodified, v4.0.2) |
 | `docs/SECURITY.md` | what the encryption does and does not protect against |
 | `docs/HANDOFF.md` | what is left to do, written for whoever continues the work |
 
-Everything in `core/` is the code that will run on the boards. Only `sim/`
-gets replaced by a real radio.
+Everything in `core/` is the code that runs on the boards. On a PC it is
+joined to `sim/`; on a board it is joined to `firmware/` instead.
